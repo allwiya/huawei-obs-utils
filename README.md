@@ -13,7 +13,21 @@ A comprehensive and **secure** tool for managing objects in **Huawei Cloud Objec
 
 ---
 
-## 🔒 **NEW: Advanced Security Features**
+## 📋 Tabla de Contenidos
+
+- [🔒 Advanced Security Features](#-advanced-security-features)
+- [🌍 Documentation Languages](#-documentation-languages)
+- [🚀 Quick Start](#-quick-start)
+- [✨ Key Features](#-key-features)
+- [📚 Available Operations](#-available-operations)
+- [🔧 Storage Classes](#-storage-classes)
+- [📖 Documentation](#-documentation)
+- [🖥️ System Requirements](#️-system-requirements)
+- [🛠️ Development](#️-development)
+- [📄 License](#-license)
+- [🆘 Support](#-support)
+
+## 🔒 **Advanced Security Features**
 
 - **🔐 Encrypted Configuration**: Credentials protected with AES-256 encryption
 - **🛡️ Multiple Authentication Methods**: Encrypted files, environment variables, secure permissions
@@ -40,7 +54,7 @@ cd obs_utils
 setup.bat   # Windows
 ```
 
-### Configuration
+### 🔒 Configuración Segura
 
 Choose your preferred security method:
 

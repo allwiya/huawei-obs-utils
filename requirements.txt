@@ -5,4 +5,4 @@ esdk-obs-python==3.24.12
 idna==3.10
 pycryptodome==3.21.0
 requests==2.32.3
-urllib3==2.3.0
+urllib3==2.2.3
