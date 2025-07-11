@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 127
-target-version = ['py38', 'py39', 'py310', 'py311']
+target-version = ['py39', 'py310', 'py311', 'py312']
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -79,15 +79,15 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: System :: Archiving",
     "Topic :: System :: Systems Administration",
     "Topic :: Security :: Cryptography"
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "certifi>=2025.1.31",
     "charset-normalizer>=3.4.1", 

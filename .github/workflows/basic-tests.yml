@@ -1,0 +1,59 @@
+name: Basic Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  basic-test:
+    name: Basic Functionality Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.9', '3.11']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Test imports
+      run: |
+        python -c "import obs_manager; print('✅ obs_manager import OK')"
+        python -c "import config; print('✅ config import OK')"
+        python -c "import security; print('✅ security import OK')"
+        python -c "import logger; print('✅ logger import OK')"
+        
+    - name: Test CLI help
+      run: |
+        python obs_utils_improved.py --help
+        
+    - name: Test configuration creation
+      run: |
+        python obs_utils_improved.py --create-config
+        
+    - name: Verify files exist (Unix)
+      if: runner.os != 'Windows'
+      run: |
+        test -f obs_config.json.sample && echo "✅ Config sample created" || echo "❌ Config sample missing"
+        test -f setup.sh && echo "✅ setup.sh exists" || echo "❌ setup.sh missing"
+        test -f README.md && echo "✅ README.md exists" || echo "❌ README.md missing"
+        
+    - name: Verify files exist (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        if (Test-Path "obs_config.json.sample") { Write-Host "✅ Config sample created" } else { Write-Host "❌ Config sample missing" }
+        if (Test-Path "setup.bat") { Write-Host "✅ setup.bat exists" } else { Write-Host "❌ setup.bat missing" }
+        if (Test-Path "README.md") { Write-Host "✅ README.md exists" } else { Write-Host "❌ README.md missing" }

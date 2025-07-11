@@ -20,7 +20,7 @@ limitations under the License.
 
 Contact: contact@ccvass.com
 """
-"""
+
 import sys
 import argparse
 from typing import Optional

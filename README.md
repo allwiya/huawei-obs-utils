@@ -142,7 +142,7 @@ python obs_utils_improved.py --operation download --bucket my-bucket --prefix "r
 
 ## 🖥️ System Requirements
 
-- **Python**: 3.7 or higher
+- **Python**: 3.9 or higher
 - **Operating System**: Linux, macOS, Windows
 - **Memory**: Minimum 512MB RAM
 - **Disk Space**: 100MB for installation and logs
