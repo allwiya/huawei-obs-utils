@@ -270,7 +270,7 @@ jobs:
         
     - name: Check for hardcoded secrets
       run: |
-        # Simple check for potential hardcoded secrets (excluding test files and comparisons)
+        # Simple check for potential hardcoded secrets (excluding test files and legitimate usage)
         if grep -r -i "password.*=" . --include="*.py" --exclude-dir=tests | grep -v "getpass\|input\|hash\|def \|parameter\|argument\|!=" | grep -E "password.*=.*['\"][^'\"]{3,}"; then
           echo "⚠️  Potential hardcoded passwords found"
           exit 1
@@ -278,7 +278,8 @@ jobs:
           echo "✅ No hardcoded passwords detected"
         fi
         
-        if grep -r -E "(access_key|secret_key).*=.*['\"][^'\"]{10,}" . --include="*.py" --exclude-dir=tests; then
+        # Check for hardcoded API keys (excluding legitimate config.get() usage)
+        if grep -r -E "(access_key|secret_key).*=.*['\"][^'\"]{10,}" . --include="*.py" --exclude-dir=tests | grep -v "config.get\|input\|getpass"; then
           echo "⚠️  Potential hardcoded API keys found"
           exit 1
         else
