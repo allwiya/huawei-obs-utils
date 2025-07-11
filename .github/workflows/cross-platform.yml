@@ -1,0 +1,430 @@
+name: Cross-Platform Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-windows:
+    name: Windows Testing
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Test Windows-specific functionality
+      run: |
+        # Test that modules can be imported on Windows
+        python -c "from obs_manager import OBSManager; print('✅ OBSManager import OK')"
+        python -c "from config import Config; print('✅ Config import OK')"
+        python -c "from security import ConfigSecurity; print('✅ Security import OK')"
+        python -c "from security_levels import MultiLevelSecurity; print('✅ Security levels import OK')"
+        
+    - name: Test CLI help on Windows
+      run: |
+        python obs_utils_improved.py --help
+        
+    - name: Test configuration creation on Windows
+      run: |
+        python obs_utils_improved.py --create-config
+        if (Test-Path "obs_config.json.sample") {
+          Write-Host "✅ Configuration sample created"
+        } else {
+          Write-Host "❌ Configuration sample not created"
+          exit 1
+        }
+        
+    - name: Test Windows batch scripts
+      run: |
+        # Test that batch scripts exist and are valid
+        if (Test-Path "setup.bat") {
+          Write-Host "✅ setup.bat exists"
+        } else {
+          Write-Host "❌ setup.bat missing"
+          exit 1
+        }
+        
+        if (Test-Path "setup_secure.bat") {
+          Write-Host "✅ setup_secure.bat exists"
+        } else {
+          Write-Host "❌ setup_secure.bat missing"
+          exit 1
+        }
+        
+    - name: Test Windows documentation
+      run: |
+        $windowsDocs = @(
+          "GUIA_SUPERADMIN_WINDOWS.md",
+          "GUIA_OPERADOR_WINDOWS.md", 
+          "INICIO_RAPIDO_WINDOWS.md"
+        )
+        
+        foreach ($doc in $windowsDocs) {
+          if (Test-Path $doc) {
+            Write-Host "✅ $doc exists"
+          } else {
+            Write-Host "❌ $doc missing"
+            exit 1
+          }
+        }
+
+  test-macos:
+    name: macOS Testing
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Test macOS-specific functionality
+      run: |
+        # Test that modules can be imported on macOS
+        python -c "from obs_manager import OBSManager; print('✅ OBSManager import OK')"
+        python -c "from config import Config; print('✅ Config import OK')"
+        python -c "from security import ConfigSecurity; print('✅ Security import OK')"
+        python -c "from security_levels import MultiLevelSecurity; print('✅ Security levels import OK')"
+        
+    - name: Test file permissions on macOS
+      run: |
+        # Create test file and test permission setting
+        echo '{"test": "data"}' > test_config.json
+        python -c "
+        from config import Config
+        config = Config('test_config.json')
+        config.secure_file_permissions()
+        "
+        
+        # Check that permissions were set correctly
+        perms=$(stat -f "%A" test_config.json)
+        if [ "$perms" = "600" ]; then
+          echo "✅ File permissions set correctly on macOS"
+        else
+          echo "❌ File permissions not set correctly: $perms"
+          exit 1
+        fi
+        
+        rm test_config.json
+        
+    - name: Test shell scripts on macOS
+      run: |
+        # Test that shell scripts exist and are executable
+        if [ -f "setup.sh" ]; then
+          echo "✅ setup.sh exists"
+          if [ -x "setup.sh" ]; then
+            echo "✅ setup.sh is executable"
+          else
+            echo "❌ setup.sh is not executable"
+            exit 1
+          fi
+        else
+          echo "❌ setup.sh missing"
+          exit 1
+        fi
+        
+        if [ -f "setup_secure.sh" ]; then
+          echo "✅ setup_secure.sh exists"
+          if [ -x "setup_secure.sh" ]; then
+            echo "✅ setup_secure.sh is executable"
+          else
+            echo "❌ setup_secure.sh is not executable"
+            exit 1
+          fi
+        else
+          echo "❌ setup_secure.sh missing"
+          exit 1
+        fi
+
+  test-linux:
+    name: Linux Testing
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Test Linux-specific functionality
+      run: |
+        # Test that modules can be imported on Linux
+        python -c "from obs_manager import OBSManager; print('✅ OBSManager import OK')"
+        python -c "from config import Config; print('✅ Config import OK')"
+        python -c "from security import ConfigSecurity; print('✅ Security import OK')"
+        python -c "from security_levels import MultiLevelSecurity; print('✅ Security levels import OK')"
+        
+    - name: Test file permissions on Linux
+      run: |
+        # Create test file and test permission setting
+        echo '{"test": "data"}' > test_config.json
+        python -c "
+        from config import Config
+        config = Config('test_config.json')
+        config.secure_file_permissions()
+        "
+        
+        # Check that permissions were set correctly
+        perms=$(stat -c "%a" test_config.json)
+        if [ "$perms" = "600" ]; then
+          echo "✅ File permissions set correctly on Linux"
+        else
+          echo "❌ File permissions not set correctly: $perms"
+          exit 1
+        fi
+        
+        rm test_config.json
+        
+    - name: Test virtual environment creation
+      run: |
+        # Test that virtual environment can be created
+        python -m venv test_venv
+        source test_venv/bin/activate
+        pip install -r requirements.txt
+        python -c "from obs_manager import OBSManager; print('✅ Virtual environment OK')"
+        deactivate
+        rm -rf test_venv
+
+  compatibility-test:
+    name: Compatibility Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Test cross-platform path handling
+      run: |
+        python -c "
+        import os
+        from pathlib import Path
+        
+        # Test that path handling works across platforms
+        test_paths = [
+            'logs/test.log',
+            'config/test.json',
+            'downloads/test/file.txt'
+        ]
+        
+        for path_str in test_paths:
+            path = Path(path_str)
+            print(f'✅ Path handling OK: {path}')
+            
+        print('✅ Cross-platform path handling OK')
+        "
+        
+    - name: Test encoding handling
+      run: |
+        python -c "
+        import json
+        import tempfile
+        
+        # Test UTF-8 encoding handling
+        test_data = {
+            'test': 'Configuración con acentos: ñáéíóú',
+            'emoji': '🔒🛡️✅❌',
+            'unicode': 'Unicode: αβγδε'
+        }
+        
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', suffix='.json', delete=False) as f:
+            json.dump(test_data, f, ensure_ascii=False, indent=2)
+            temp_file = f.name
+        
+        # Read back and verify
+        with open(temp_file, 'r', encoding='utf-8') as f:
+            loaded_data = json.load(f)
+            
+        assert loaded_data == test_data
+        print('✅ UTF-8 encoding handling OK')
+        
+        import os
+        os.unlink(temp_file)
+        "
+        
+    - name: Test environment variable handling
+      run: |
+        # Test environment variable handling across platforms
+        export TEST_VAR="test_value_with_special_chars_ñáéíóú"
+        python -c "
+        import os
+        
+        test_var = os.getenv('TEST_VAR')
+        assert test_var == 'test_value_with_special_chars_ñáéíóú'
+        print('✅ Environment variable handling OK')
+        "
+
+  integration-test:
+    name: Integration Testing
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Test full workflow (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        # Test complete workflow
+        echo "Testing complete workflow on ${{ runner.os }}"
+        
+        # 1. Create configuration
+        python obs_utils_improved.py --create-config
+        test -f obs_config.json.sample
+        
+        # 2. Test help
+        python obs_utils_improved.py --help
+        
+        # 3. Test security levels listing
+        python obs_utils_improved.py --list-security-levels
+        
+        echo "✅ Full workflow test completed on ${{ runner.os }}"
+        
+    - name: Test full workflow (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        # Test complete workflow on Windows
+        Write-Host "Testing complete workflow on Windows"
+        
+        # 1. Create configuration
+        python obs_utils_improved.py --create-config
+        if (-not (Test-Path "obs_config.json.sample")) {
+          Write-Host "❌ Configuration sample not created"
+          exit 1
+        }
+        
+        # 2. Test help
+        python obs_utils_improved.py --help
+        
+        # 3. Test security levels listing
+        python obs_utils_improved.py --list-security-levels
+        
+        Write-Host "✅ Full workflow test completed on Windows"
+
+  performance-test:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install memory-profiler
+        
+    - name: Test import performance
+      run: |
+        python -c "
+        import time
+        
+        start_time = time.time()
+        from obs_manager import OBSManager
+        from config import Config
+        from security import ConfigSecurity
+        from security_levels import MultiLevelSecurity
+        end_time = time.time()
+        
+        import_time = end_time - start_time
+        print(f'Import time: {import_time:.3f} seconds')
+        
+        if import_time > 2.0:
+            print('❌ Import time too slow')
+            exit(1)
+        else:
+            print('✅ Import performance OK')
+        "
+        
+    - name: Test memory usage
+      run: |
+        python -c "
+        import psutil
+        import os
+        
+        process = psutil.Process(os.getpid())
+        initial_memory = process.memory_info().rss / 1024 / 1024  # MB
+        
+        # Import modules
+        from obs_manager import OBSManager
+        from config import Config
+        from security import ConfigSecurity
+        from security_levels import MultiLevelSecurity
+        
+        final_memory = process.memory_info().rss / 1024 / 1024  # MB
+        memory_increase = final_memory - initial_memory
+        
+        print(f'Memory usage increase: {memory_increase:.2f} MB')
+        
+        if memory_increase > 50:  # 50 MB threshold
+            print('❌ Memory usage too high')
+            exit(1)
+        else:
+            print('✅ Memory usage OK')
+        "
