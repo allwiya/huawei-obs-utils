@@ -36,7 +36,7 @@ jobs:
         
     - name: Run Safety check for known vulnerabilities
       run: |
-        safety check --json --output safety-report.json
+        safety check --json > safety-report.json || true
         safety check --short-report
         
     - name: Run Semgrep security analysis
@@ -270,8 +270,8 @@ jobs:
         
     - name: Check for hardcoded secrets
       run: |
-        # Simple check for potential hardcoded secrets (excluding test files)
-        if grep -r -i "password.*=" . --include="*.py" --exclude-dir=tests | grep -v "getpass\|input\|hash\|def \|parameter\|argument"; then
+        # Simple check for potential hardcoded secrets (excluding test files and comparisons)
+        if grep -r -i "password.*=" . --include="*.py" --exclude-dir=tests | grep -v "getpass\|input\|hash\|def \|parameter\|argument\|!=" | grep -E "password.*=.*['\"][^'\"]{3,}"; then
           echo "⚠️  Potential hardcoded passwords found"
           exit 1
         else
