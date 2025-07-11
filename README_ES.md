@@ -121,6 +121,7 @@ python obs_utils_improved.py --operation download --bucket mi-bucket --prefix "r
 ## 📖 Documentación
 
 ### Documentación en Español
+- **[📚 Guía Rápida de Usuario](docs/es/GUIA_RAPIDA.md)** - Parámetros completos y ejemplos
 - [Guía de Instalación](docs/es/INSTALACION.md)
 - [Guía de Configuración](docs/es/CONFIGURACION.md)
 - [Guía de Seguridad](docs/es/SEGURIDAD.md)
@@ -130,6 +131,7 @@ python obs_utils_improved.py --operation download --bucket mi-bucket --prefix "r
 - [Guía Windows](docs/es/GUIA_WINDOWS.md)
 
 ### Documentación en Inglés
+- **[📚 Quick User Guide](docs/en/QUICK_GUIDE.md)** - Complete parameters and examples
 - [Installation Guide](docs/en/INSTALLATION.md)
 - [Configuration Guide](docs/en/CONFIGURATION.md)
 - [Security Guide](docs/en/SECURITY.md)
