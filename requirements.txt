@@ -1,0 +1,8 @@
+certifi==2025.1.31
+charset-normalizer==3.4.1
+cryptography>=3.4.8
+esdk-obs-python==3.24.12
+idna==3.10
+pycryptodome==3.21.0
+requests==2.32.3
+urllib3==2.3.0

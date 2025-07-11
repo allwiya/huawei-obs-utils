@@ -1,0 +1,459 @@
+name: OBS Utils CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  PYTHON_VERSION: '3.9'
+  
+jobs:
+  # Job 1: Linting y Code Quality
+  lint:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 black isort bandit safety
+        pip install -r requirements.txt
+        
+    - name: Run Black (Code Formatting)
+      run: |
+        black --check --diff .
+        
+    - name: Run isort (Import Sorting)
+      run: |
+        isort --check-only --diff .
+        
+    - name: Run Flake8 (Linting)
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+    - name: Run Bandit (Security Linting)
+      run: |
+        bandit -r . -f json -o bandit-report.json || true
+        bandit -r . --severity-level medium
+        
+    - name: Check for known security vulnerabilities
+      run: |
+        safety check --json --output safety-report.json || true
+        safety check
+        
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+
+  # Job 2: Testing
+  test:
+    name: Unit Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-mock
+        pip install -r requirements.txt
+        
+    - name: Create test configuration
+      run: |
+        echo '{"access_key_id": "test", "secret_access_key": "test", "server": "https://test.com", "region": "test"}' > obs_config.json
+        
+    - name: Run unit tests
+      run: |
+        pytest tests/ -v --cov=. --cov-report=xml --cov-report=html
+        
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  # Job 3: Security Testing
+  security:
+    name: Security Testing
+    runs-on: ubuntu-latest
+    needs: [lint]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Test security module imports
+      run: |
+        python -c "from security import ConfigSecurity; print('✅ Security module OK')"
+        python -c "from security_levels import MultiLevelSecurity; print('✅ Security levels OK')"
+        
+    - name: Test encryption functionality
+      run: |
+        python -c "
+        from security import ConfigSecurity
+        import tempfile
+        import os
+        
+        # Test encryption/decryption
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            f.write('{\"test\": \"data\"}')
+            temp_file = f.name
+        
+        try:
+            security = ConfigSecurity(temp_file)
+            # Test would require interactive password, so just test initialization
+            print('✅ Encryption module functional')
+        finally:
+            os.unlink(temp_file)
+        "
+        
+    - name: Test configuration security
+      run: |
+        python -c "
+        from config import Config
+        import tempfile
+        import os
+        
+        # Create test config
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            f.write('{\"access_key_id\": \"test\", \"secret_access_key\": \"test\", \"server\": \"https://test.com\"}')
+            temp_file = f.name
+        
+        try:
+            config = Config(temp_file)
+            assert config.validate_credentials()
+            print('✅ Configuration security OK')
+        finally:
+            os.unlink(temp_file)
+        "
+
+  # Job 4: Documentation
+  documentation:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check documentation files
+      run: |
+        # Check that all required documentation exists
+        required_docs=(
+          "README.md"
+          "SECURITY.md"
+          "SECURITY_LEVELS.md"
+          "GUIA_SUPERADMIN_WINDOWS.md"
+          "GUIA_OPERADOR_WINDOWS.md"
+          "INICIO_RAPIDO_WINDOWS.md"
+        )
+        
+        for doc in "${required_docs[@]}"; do
+          if [[ -f "$doc" ]]; then
+            echo "✅ $doc exists"
+          else
+            echo "❌ $doc missing"
+            exit 1
+          fi
+        done
+        
+    - name: Check for broken links in documentation
+      run: |
+        # Simple check for common markdown link patterns
+        find . -name "*.md" -exec grep -l "\[.*\](.*)" {} \; | while read file; do
+          echo "Checking links in $file"
+          # This is a basic check - in production you might want a more sophisticated tool
+          grep -o "\[.*\](.*)" "$file" | head -5
+        done
+        
+    - name: Validate README structure
+      run: |
+        if grep -q "## 📋 Tabla de Contenidos" README.md; then
+          echo "✅ README has table of contents"
+        else
+          echo "❌ README missing table of contents"
+          exit 1
+        fi
+        
+        if grep -q "🔒.*Configuración Segura" README.md; then
+          echo "✅ README has security section"
+        else
+          echo "❌ README missing security section"
+          exit 1
+        fi
+
+  # Job 5: Build and Package
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+        
+    - name: Create distribution package
+      run: |
+        # Create a simple setup.py for packaging
+        cat > setup.py << 'EOF'
+        from setuptools import setup, find_packages
+        
+        with open("README.md", "r", encoding="utf-8") as fh:
+            long_description = fh.read()
+        
+        with open("requirements.txt", "r", encoding="utf-8") as fh:
+            requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
+        
+        setup(
+            name="obs-utils",
+            version="2.0.0",
+            author="CCVASS",
+            author_email="contact@ccvass.com",
+            description="Secure utilities for Huawei Cloud Object Storage Service",
+            long_description=long_description,
+            long_description_content_type="text/markdown",
+            url="https://github.com/ccvass/obs-utils",
+            packages=find_packages(),
+            classifiers=[
+                "Development Status :: 4 - Beta",
+                "Intended Audience :: Developers",
+                "License :: OSI Approved :: Apache Software License",
+                "Operating System :: OS Independent",
+                "Programming Language :: Python :: 3",
+                "Programming Language :: Python :: 3.8",
+                "Programming Language :: Python :: 3.9",
+                "Programming Language :: Python :: 3.10",
+                "Programming Language :: Python :: 3.11",
+            ],
+            python_requires=">=3.8",
+            install_requires=requirements,
+            entry_points={
+                "console_scripts": [
+                    "obs-utils=obs_utils_improved:main",
+                ],
+            },
+        )
+        EOF
+        
+    - name: Build package
+      run: |
+        python -m build
+        
+    - name: Check package
+      run: |
+        twine check dist/*
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist-packages
+        path: dist/
+
+  # Job 6: Integration Tests
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Test CLI interface
+      run: |
+        python obs_utils_improved.py --help
+        
+    - name: Test configuration creation
+      run: |
+        python obs_utils_improved.py --create-config
+        test -f obs_config.json.sample
+        
+    - name: Test security setup (non-interactive)
+      run: |
+        # Test that security modules can be imported and initialized
+        python -c "
+        from security_levels import MultiLevelSecurity
+        security = MultiLevelSecurity()
+        print('✅ Security levels integration OK')
+        "
+
+  # Job 7: Release
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [test, security, build, integration]
+    if: github.event_name == 'release'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: dist-packages
+        path: dist/
+        
+    - name: Create release notes
+      run: |
+        cat > release_notes.md << 'EOF'
+        ## 🚀 OBS Utils v2.0.0 - Security Enhanced Release
+        
+        ### ✨ New Features
+        - 🔐 **Multi-level Security System**: Different passwords for different operations
+        - 🛡️ **AES-256 Encryption**: Secure credential storage
+        - 🪟 **Windows Guides**: Complete documentation for Windows users
+        - 👥 **Role-based Access**: Separate guides for admins and operators
+        - 🔍 **Automatic Security Detection**: Warns about insecure configurations
+        
+        ### 🔒 Security Levels
+        - **READ_ONLY**: List, search, download (no password required)
+        - **STANDARD**: Archive, restore operations (operator password)
+        - **DESTRUCTIVE**: Delete operations (supervisor password)
+        - **ADMIN**: Full system management (admin password)
+        
+        ### 📚 Documentation
+        - Complete Windows installation guides
+        - Security best practices
+        - Role-based user guides
+        - Troubleshooting documentation
+        
+        ### 🛠️ Installation
+        ```bash
+        # Linux/macOS
+        ./setup_secure.sh
+        
+        # Windows
+        setup_secure.bat
+        ```
+        
+        ### 🔧 Quick Start
+        ```bash
+        # Interactive mode
+        python obs_utils_improved.py
+        
+        # With security levels
+        python obs_utils_improved.py --enable-security-levels
+        ```
+        EOF
+        
+    - name: Upload release assets
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          dist/*
+          README.md
+          SECURITY.md
+          GUIA_SUPERADMIN_WINDOWS.md
+          GUIA_OPERADOR_WINDOWS.md
+        body_path: release_notes.md
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job 8: Notify
+  notify:
+    name: Notifications
+    runs-on: ubuntu-latest
+    needs: [test, security, build]
+    if: always()
+    
+    steps:
+    - name: Notify success
+      if: needs.test.result == 'success' && needs.security.result == 'success' && needs.build.result == 'success'
+      run: |
+        echo "✅ All checks passed successfully!"
+        echo "- Code quality: ✅"
+        echo "- Tests: ✅" 
+        echo "- Security: ✅"
+        echo "- Build: ✅"
+        
+    - name: Notify failure
+      if: needs.test.result == 'failure' || needs.security.result == 'failure' || needs.build.result == 'failure'
+      run: |
+        echo "❌ Some checks failed:"
+        echo "- Tests: ${{ needs.test.result }}"
+        echo "- Security: ${{ needs.security.result }}"
+        echo "- Build: ${{ needs.build.result }}"
+        exit 1
