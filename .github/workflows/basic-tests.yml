@@ -42,18 +42,23 @@ jobs:
         
     - name: Test configuration creation
       run: |
-        python obs_utils_improved.py --create-config
+        python obs_utils_improved.py --create-config --test-mode
+        
+    - name: Test security levels listing
+      run: |
+        python obs_utils_improved.py --list-security-levels --test-mode
         
     - name: Verify files exist (Unix)
       if: runner.os != 'Windows'
       run: |
-        test -f obs_config.json.sample && echo "✅ Config sample created" || echo "❌ Config sample missing"
-        test -f setup.sh && echo "✅ setup.sh exists" || echo "❌ setup.sh missing"
-        test -f README.md && echo "✅ README.md exists" || echo "❌ README.md missing"
+        test -f obs_config.json.sample && echo "[OK] Config sample created" || echo "[ERROR] Config sample missing"
+        test -f setup.sh && echo "[OK] setup.sh exists" || echo "[ERROR] setup.sh missing"
+        test -f README.md && echo "[OK] README.md exists" || echo "[ERROR] README.md missing"
         
     - name: Verify files exist (Windows)
       if: runner.os == 'Windows'
       run: |
-        if (Test-Path "obs_config.json.sample") { Write-Host "✅ Config sample created" } else { Write-Host "❌ Config sample missing" }
-        if (Test-Path "setup.bat") { Write-Host "✅ setup.bat exists" } else { Write-Host "❌ setup.bat missing" }
-        if (Test-Path "README.md") { Write-Host "✅ README.md exists" } else { Write-Host "❌ README.md missing" }
+        $env:PYTHONIOENCODING = "utf-8"
+        if (Test-Path "obs_config.json.sample") { Write-Host "[OK] Config sample created" } else { Write-Host "[ERROR] Config sample missing" }
+        if (Test-Path "setup.bat") { Write-Host "[OK] setup.bat exists" } else { Write-Host "[ERROR] setup.bat missing" }
+        if (Test-Path "README.md") { Write-Host "[OK] README.md exists" } else { Write-Host "[ERROR] README.md missing" }

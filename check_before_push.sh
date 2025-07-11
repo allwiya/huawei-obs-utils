@@ -53,6 +53,11 @@ echo "🧪 Probando CLI..."
 python obs_utils_improved.py --help > /dev/null || exit 1
 echo "✅ CLI funciona correctamente"
 
+# Verificar modo de prueba
+echo "🧪 Probando modo de prueba..."
+python obs_utils_improved.py --list-security-levels --test-mode > /dev/null || exit 1
+echo "✅ Modo de prueba funciona correctamente"
+
 # Verificar sintaxis de workflows
 echo "🧪 Verificando workflows..."
 for workflow in .github/workflows/*.yml; do

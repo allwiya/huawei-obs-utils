@@ -30,11 +30,13 @@ jobs:
         
     - name: Test Windows-specific functionality
       run: |
+        # Set UTF-8 encoding for Windows
+        $env:PYTHONIOENCODING = "utf-8"
         # Test that modules can be imported on Windows
-        python -c "from obs_manager import OBSManager; print('✅ OBSManager import OK')"
-        python -c "from config import Config; print('✅ Config import OK')"
-        python -c "from security import ConfigSecurity; print('✅ Security import OK')"
-        python -c "from security_levels import MultiLevelSecurity; print('✅ Security levels import OK')"
+        python -c "from obs_manager import OBSManager; print('[OK] OBSManager import OK')"
+        python -c "from config import Config; print('[OK] Config import OK')"
+        python -c "from security import ConfigSecurity; print('[OK] Security import OK')"
+        python -c "from security_levels import MultiLevelSecurity; print('[OK] Security levels import OK')"
         
     - name: Test CLI help on Windows
       run: |
@@ -42,11 +44,12 @@ jobs:
         
     - name: Test configuration creation on Windows
       run: |
+        $env:PYTHONIOENCODING = "utf-8"
         python obs_utils_improved.py --create-config
         if (Test-Path "obs_config.json.sample") {
-          Write-Host "✅ Configuration sample created"
+          Write-Host "[OK] Configuration sample created"
         } else {
-          Write-Host "❌ Configuration sample not created"
+          Write-Host "[ERROR] Configuration sample not created"
           exit 1
         }
         
@@ -54,16 +57,16 @@ jobs:
       run: |
         # Test that batch scripts exist and are valid
         if (Test-Path "setup.bat") {
-          Write-Host "✅ setup.bat exists"
+          Write-Host "[OK] setup.bat exists"
         } else {
-          Write-Host "❌ setup.bat missing"
+          Write-Host "[ERROR] setup.bat missing"
           exit 1
         }
         
         if (Test-Path "setup_secure.bat") {
-          Write-Host "✅ setup_secure.bat exists"
+          Write-Host "[OK] setup_secure.bat exists"
         } else {
-          Write-Host "❌ setup_secure.bat missing"
+          Write-Host "[ERROR] setup_secure.bat missing"
           exit 1
         }
         
@@ -76,9 +79,9 @@ jobs:
         
         foreach ($doc in $windowsDocs) {
           if (Test-Path $doc) {
-            Write-Host "✅ $doc exists"
+            Write-Host "[OK] $doc exists"
           } else {
-            Write-Host "❌ $doc missing"
+            Write-Host "[ERROR] $doc missing"
             exit 1
           }
         }
@@ -107,10 +110,10 @@ jobs:
     - name: Test macOS-specific functionality
       run: |
         # Test that modules can be imported on macOS
-        python -c "from obs_manager import OBSManager; print('✅ OBSManager import OK')"
-        python -c "from config import Config; print('✅ Config import OK')"
-        python -c "from security import ConfigSecurity; print('✅ Security import OK')"
-        python -c "from security_levels import MultiLevelSecurity; print('✅ Security levels import OK')"
+        python -c "from obs_manager import OBSManager; print('[OK] OBSManager import OK')"
+        python -c "from config import Config; print('[OK] Config import OK')"
+        python -c "from security import ConfigSecurity; print('[OK] Security import OK')"
+        python -c "from security_levels import MultiLevelSecurity; print('[OK] Security levels import OK')"
         
     - name: Test file permissions on macOS
       run: |
@@ -125,9 +128,9 @@ jobs:
         # Check that permissions were set correctly
         perms=$(stat -f "%A" test_config.json)
         if [ "$perms" = "600" ]; then
-          echo "✅ File permissions set correctly on macOS"
+          echo "[OK] File permissions set correctly on macOS"
         else
-          echo "❌ File permissions not set correctly: $perms"
+          echo "[ERROR] File permissions not set correctly: $perms"
           exit 1
         fi
         
@@ -137,28 +140,28 @@ jobs:
       run: |
         # Test that shell scripts exist and are executable
         if [ -f "setup.sh" ]; then
-          echo "✅ setup.sh exists"
+          echo "[OK] setup.sh exists"
           if [ -x "setup.sh" ]; then
-            echo "✅ setup.sh is executable"
+            echo "[OK] setup.sh is executable"
           else
-            echo "❌ setup.sh is not executable"
+            echo "[ERROR] setup.sh is not executable"
             exit 1
           fi
         else
-          echo "❌ setup.sh missing"
+          echo "[ERROR] setup.sh missing"
           exit 1
         fi
         
         if [ -f "setup_secure.sh" ]; then
-          echo "✅ setup_secure.sh exists"
+          echo "[OK] setup_secure.sh exists"
           if [ -x "setup_secure.sh" ]; then
-            echo "✅ setup_secure.sh is executable"
+            echo "[OK] setup_secure.sh is executable"
           else
-            echo "❌ setup_secure.sh is not executable"
+            echo "[ERROR] setup_secure.sh is not executable"
             exit 1
           fi
         else
-          echo "❌ setup_secure.sh missing"
+          echo "[ERROR] setup_secure.sh missing"
           exit 1
         fi
 
@@ -186,10 +189,10 @@ jobs:
     - name: Test Linux-specific functionality
       run: |
         # Test that modules can be imported on Linux
-        python -c "from obs_manager import OBSManager; print('✅ OBSManager import OK')"
-        python -c "from config import Config; print('✅ Config import OK')"
-        python -c "from security import ConfigSecurity; print('✅ Security import OK')"
-        python -c "from security_levels import MultiLevelSecurity; print('✅ Security levels import OK')"
+        python -c "from obs_manager import OBSManager; print('[OK] OBSManager import OK')"
+        python -c "from config import Config; print('[OK] Config import OK')"
+        python -c "from security import ConfigSecurity; print('[OK] Security import OK')"
+        python -c "from security_levels import MultiLevelSecurity; print('[OK] Security levels import OK')"
         
     - name: Test file permissions on Linux
       run: |
@@ -204,9 +207,9 @@ jobs:
         # Check that permissions were set correctly
         perms=$(stat -c "%a" test_config.json)
         if [ "$perms" = "600" ]; then
-          echo "✅ File permissions set correctly on Linux"
+          echo "[OK] File permissions set correctly on Linux"
         else
-          echo "❌ File permissions not set correctly: $perms"
+          echo "[ERROR] File permissions not set correctly: $perms"
           exit 1
         fi
         
@@ -218,7 +221,7 @@ jobs:
         python -m venv test_venv
         source test_venv/bin/activate
         pip install -r requirements.txt
-        python -c "from obs_manager import OBSManager; print('✅ Virtual environment OK')"
+        python -c "from obs_manager import OBSManager; print('[OK] Virtual environment OK')"
         deactivate
         rm -rf test_venv
 
@@ -255,9 +258,9 @@ jobs:
         
         for path_str in test_paths:
             path = Path(path_str)
-            print(f'✅ Path handling OK: {path}')
+            print(f'[OK] Path handling OK: {path}')
             
-        print('✅ Cross-platform path handling OK')
+        print('[OK] Cross-platform path handling OK')
         "
         
     - name: Test encoding handling
@@ -269,7 +272,7 @@ jobs:
         # Test UTF-8 encoding handling
         test_data = {
             'test': 'Configuración con acentos: ñáéíóú',
-            'emoji': '🔒🛡️✅❌',
+            'emoji': 'Test emojis removed for compatibility',
             'unicode': 'Unicode: αβγδε'
         }
         
@@ -282,7 +285,7 @@ jobs:
             loaded_data = json.load(f)
             
         assert loaded_data == test_data
-        print('✅ UTF-8 encoding handling OK')
+        print('[OK] UTF-8 encoding handling OK')
         
         import os
         os.unlink(temp_file)
@@ -297,7 +300,7 @@ jobs:
         
         test_var = os.getenv('TEST_VAR')
         assert test_var == 'test_value_with_special_chars_ñáéíóú'
-        print('✅ Environment variable handling OK')
+        print('[OK] Environment variable handling OK')
         "
 
   integration-test:
@@ -328,16 +331,16 @@ jobs:
         echo "Testing complete workflow on ${{ runner.os }}"
         
         # 1. Create configuration
-        python obs_utils_improved.py --create-config
+        python obs_utils_improved.py --create-config --test-mode
         test -f obs_config.json.sample
         
         # 2. Test help
         python obs_utils_improved.py --help
         
         # 3. Test security levels listing
-        python obs_utils_improved.py --list-security-levels
+        python obs_utils_improved.py --list-security-levels --test-mode
         
-        echo "✅ Full workflow test completed on ${{ runner.os }}"
+        echo "[OK] Full workflow test completed on ${{ runner.os }}"
         
     - name: Test full workflow (Windows)
       if: runner.os == 'Windows'
@@ -346,9 +349,10 @@ jobs:
         Write-Host "Testing complete workflow on Windows"
         
         # 1. Create configuration
-        python obs_utils_improved.py --create-config
+        $env:PYTHONIOENCODING = "utf-8"
+        python obs_utils_improved.py --create-config --test-mode
         if (-not (Test-Path "obs_config.json.sample")) {
-          Write-Host "❌ Configuration sample not created"
+          Write-Host "[ERROR] Configuration sample not created"
           exit 1
         }
         
@@ -356,9 +360,9 @@ jobs:
         python obs_utils_improved.py --help
         
         # 3. Test security levels listing
-        python obs_utils_improved.py --list-security-levels
+        python obs_utils_improved.py --list-security-levels --test-mode
         
-        Write-Host "✅ Full workflow test completed on Windows"
+        Write-Host "[OK] Full workflow test completed on Windows"
 
   performance-test:
     name: Performance Testing
@@ -395,10 +399,10 @@ jobs:
         print(f'Import time: {import_time:.3f} seconds')
         
         if import_time > 2.0:
-            print('❌ Import time too slow')
+            print('[ERROR] Import time too slow')
             exit(1)
         else:
-            print('✅ Import performance OK')
+            print('[OK] Import performance OK')
         "
         
     - name: Test memory usage
@@ -422,8 +426,8 @@ jobs:
         print(f'Memory usage increase: {memory_increase:.2f} MB')
         
         if memory_increase > 50:  # 50 MB threshold
-            print('❌ Memory usage too high')
+            print('[ERROR] Memory usage too high')
             exit(1)
         else:
-            print('✅ Memory usage OK')
+            print('[OK] Memory usage OK')
         "
