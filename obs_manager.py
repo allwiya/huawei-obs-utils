@@ -48,11 +48,19 @@ class OBSManager:
     def _initialize_client(self) -> None:
         """Initialize OBS client with credentials"""
         try:
-            self.client = ObsClient(
-                access_key_id=self.config.get('access_key_id'),
-                secret_access_key=self.config.get('secret_access_key'),
-                server=self.config.get('server')
-            )
+            # Prepare client parameters
+            client_params = {
+                'access_key_id': self.config.get('access_key_id'),
+                'secret_access_key': self.config.get('secret_access_key'),
+                'server': self.config.get('server')
+            }
+            
+            # Add region if available
+            region = self.config.get('region')
+            if region:
+                client_params['region'] = region
+            
+            self.client = ObsClient(**client_params)
             self.logger.info("OBS client initialized successfully")
         except Exception as e:
             self.logger.error(f"Failed to initialize OBS client: {e}")

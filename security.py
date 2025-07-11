@@ -53,6 +53,11 @@ class ConfigSecurity:
         key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
         return key, salt
     
+    def _hash_password(self, password: str) -> str:
+        """Generate SHA-256 hash of password for testing purposes"""
+        import hashlib
+        return hashlib.sha256(password.encode()).hexdigest()
+    
     def encrypt_config(self, password: str = None) -> bool:
         """Encrypt configuration file"""
         try:
