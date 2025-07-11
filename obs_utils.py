@@ -32,7 +32,7 @@ logging.basicConfig(filename=log_file, encoding="utf-8", level=logging.DEBUG, fo
 # logger.addHandler(console_handler)
 # logger.addHandler(file_handler)
 # formatter = logging.Formatter(
-##    "{asctime} - {levelname} - {message}",
+#    "{asctime} - {levelname} - {message}",
 #     style="{",
 #     datefmt="%Y-%m-%d %H:%M",
 # )
@@ -248,7 +248,7 @@ elif operacion == "x":
                             break
                     index2 += 1
                 except Exception as error:
-                    priny(error)
+                    print(error)
         else:
             print("errorCode:", resp.errorCode)
             print("errorMessage:", resp.errorMessage)
