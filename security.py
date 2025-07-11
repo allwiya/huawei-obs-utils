@@ -20,14 +20,15 @@ limitations under the License.
 Contact: contact@ccvass.com
 """
 
-import os
-import json
 import base64
 import getpass
+import json
+import logging
+import os
+
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import logging
 
 logger = logging.getLogger(__name__)
 

@@ -4,12 +4,14 @@ Secure OBS Manager with Multi-Level Security
 Enhanced version of OBSManager with security level verification
 """
 
+import logging
 import os
+from typing import Generator, Optional, Tuple
+
 from obs import ObsClient
+
 from config import Config
 from logger import get_logger
-from typing import Generator, Tuple, Optional
-import logging
 
 # Try to import security levels (optional)
 try:

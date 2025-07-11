@@ -3,11 +3,12 @@
 Basic tests for OBS Utils
 """
 
-import pytest
-import tempfile
-import os
 import json
+import os
+import tempfile
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestConfig:
@@ -178,8 +179,8 @@ class TestOBSManager:
     @patch("obs_manager.ObsClient")
     def test_obs_manager_initialization(self, mock_obs_client):
         """Test OBS manager initialization with mocked client"""
-        from obs_manager import OBSManager
         from config import Config
+        from obs_manager import OBSManager
 
         # Create test config
         test_config = {
@@ -306,10 +307,10 @@ class TestIntegration:
     def test_full_import_chain(self):
         """Test that all modules can be imported together"""
         from config import Config
+        from logger import get_logger
         from obs_manager import OBSManager
         from security import ConfigSecurity
         from security_levels import MultiLevelSecurity
-        from logger import get_logger
 
         # All imports should work
         assert Config is not None

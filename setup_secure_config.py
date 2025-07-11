@@ -3,10 +3,11 @@
 Interactive setup for secure OBS Utils configuration
 """
 
+import getpass
+import json
 import os
 import sys
-import json
-import getpass
+
 from security import setup_secure_config
 
 

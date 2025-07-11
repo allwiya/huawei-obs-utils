@@ -6,6 +6,7 @@ Demuestra cómo usar las diferentes opciones de configuración segura
 
 import os
 import sys
+
 from config import Config
 from obs_manager import OBSManager
 from security import ConfigSecurity, setup_secure_config

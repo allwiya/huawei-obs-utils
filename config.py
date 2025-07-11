@@ -19,10 +19,10 @@ limitations under the License.
 Contact: contact@ccvass.com
 """
 
-import os
+import getpass
 import json
 import logging
-import getpass
+import os
 from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)

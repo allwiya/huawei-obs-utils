@@ -1,15 +1,13 @@
 # import fireducks.pandas as pd
 # import pandas as pd
-from datetime import datetime
-
 # from dateutil.relativedelta import relativedelta
 import glob
-import os
-from obs import ObsClient
-from obs import SetObjectMetadataHeader
 import logging
+import os
 import sys
+from datetime import datetime
 
+from obs import ObsClient, SetObjectMetadataHeader
 
 dt_now = datetime.now()
 

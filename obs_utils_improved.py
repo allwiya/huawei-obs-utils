@@ -21,12 +21,13 @@ limitations under the License.
 Contact: contact@ccvass.com
 """
 
-import sys
 import argparse
+import sys
 from typing import Optional
-from obs_manager import OBSManager
+
 from config import Config
 from logger import get_logger
+from obs_manager import OBSManager
 
 
 def get_user_input(prompt: str, required: bool = True, default: str = "") -> str:

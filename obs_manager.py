@@ -20,8 +20,10 @@ Contact: contact@ccvass.com
 
 import os
 import sys
-from typing import Optional, List, Dict, Any, Generator, Tuple
+from typing import Any, Dict, Generator, List, Optional, Tuple
+
 from obs import ObsClient, SetObjectMetadataHeader
+
 from config import Config
 from logger import get_logger
 

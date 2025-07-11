@@ -6,8 +6,9 @@ Demuestra cómo configurar y usar el sistema de seguridad multinivel
 
 import os
 import sys
-from security_levels import MultiLevelSecurity, SecurityLevel, setup_multi_level_security
+
 from obs_manager_secure import SecureOBSManager
+from security_levels import MultiLevelSecurity, SecurityLevel, setup_multi_level_security
 
 
 def demo_security_levels():
