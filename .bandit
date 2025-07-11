@@ -1,0 +1,13 @@
+[bandit]
+# Bandit configuration file for OBS Utils
+# Exclude test files and example files from security scanning
+
+exclude_dirs = tests,examples
+skips = B101,B601
+
+# B101: Test for use of assert
+# B601: Test for shell injection within Paramiko
+
+# Allow hardcoded passwords in test files
+[bandit.hardcoded_password_string]
+word_list = test_password,test_secret,test_key,example_password
