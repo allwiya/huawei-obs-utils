@@ -31,10 +31,10 @@ jobs:
         
     - name: Test imports
       run: |
-        python -c "import obs_manager; print('✅ obs_manager import OK')"
-        python -c "import config; print('✅ config import OK')"
-        python -c "import security; print('✅ security import OK')"
-        python -c "import logger; print('✅ logger import OK')"
+        python -c "import obs_manager; print('[OK] obs_manager import OK')"
+        python -c "import config; print('[OK] config import OK')"
+        python -c "import security; print('[OK] security import OK')"
+        python -c "import logger; print('[OK] logger import OK')"
         
     - name: Test CLI help
       run: |
