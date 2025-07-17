@@ -1,9 +1,0 @@
-{
-  "access_key_id": "YOUR_ACCESS_KEY_HERE",
-  "secret_access_key": "YOUR_SECRET_KEY_HERE",
-  "server": "https://obs.sa-peru-1.myhuaweicloud.com/",
-  "region": "sa-peru-1",
-  "max_keys": 1000,
-  "restore_days": 30,
-  "restore_tier": "Expedited"
-}

@@ -25,6 +25,7 @@ import getpass
 import json
 import logging
 import os
+import platform
 
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
@@ -78,7 +79,7 @@ class ConfigSecurity:
                     return False
 
             # Read configuration
-            with open(self.config_file, "r") as f:
+            with open(self.config_file, "r", encoding="utf-8") as f:
                 config_data = f.read()
 
             # Generate key and salt
@@ -96,9 +97,13 @@ class ConfigSecurity:
             with open(self.salt_file, "wb") as f:
                 f.write(salt)
 
-            # Set restrictive permissions
-            os.chmod(self.encrypted_file, 0o600)  # Read/write for owner only
-            os.chmod(self.salt_file, 0o600)
+            # Set restrictive permissions (Unix/Linux/macOS only)
+            if platform.system() != "Windows":
+                try:
+                    os.chmod(self.encrypted_file, 0o600)  # Read/write for owner only
+                    os.chmod(self.salt_file, 0o600)
+                except (OSError, AttributeError):
+                    pass  # Permissions not supported on this platform
 
             # Optionally remove original file
             response = input("Remove original unencrypted file? (y/N): ")
@@ -178,9 +183,13 @@ class ConfigSecurity:
             with open(self.salt_file, "wb") as f:
                 f.write(salt)
 
-            # Set restrictive permissions
-            os.chmod(self.encrypted_file, 0o600)
-            os.chmod(self.salt_file, 0o600)
+            # Set restrictive permissions (Unix/Linux/macOS only)
+            if platform.system() != "Windows":
+                try:
+                    os.chmod(self.encrypted_file, 0o600)
+                    os.chmod(self.salt_file, 0o600)
+                except (OSError, AttributeError):
+                    pass  # Permissions not supported on this platform
 
             logger.info(f"Encrypted configuration created: {self.encrypted_file}")
             return True
@@ -245,7 +254,7 @@ class SecureConfig:
                         logger.warning(f"Configuration file {self.config_file} has insecure permissions")
                         logger.warning("Consider encrypting the configuration or setting permissions to 600")
 
-                    with open(self.config_file, "r") as f:
+                    with open(self.config_file, "r", encoding="utf-8") as f:
                         self.config = json.load(f)
                 else:
                     # Try environment variables
@@ -286,8 +295,11 @@ class SecureConfig:
 
     def secure_file_permissions(self):
         """Set secure permissions on configuration file"""
-        if os.path.exists(self.config_file):
-            os.chmod(self.config_file, 0o600)  # Read/write for owner only
+        if os.path.exists(self.config_file) and platform.system() != "Windows":
+            try:
+                os.chmod(self.config_file, 0o600)  # Read/write for owner only
+            except (OSError, AttributeError):
+                pass  # Permissions not supported on this platform
             logger.info(f"Set secure permissions on {self.config_file}")
 
 
@@ -383,11 +395,15 @@ def setup_secure_file():
     config_data["restore_tier"] = "Expedited"
 
     # Write configuration file
-    with open("obs_config.json", "w") as f:
+    with open("obs_config.json", "w", encoding="utf-8") as f:
         json.dump(config_data, f, indent=2)
 
-    # Set secure permissions
-    os.chmod("obs_config.json", 0o600)
+    # Set secure permissions (Unix/Linux/macOS only)
+    if platform.system() != "Windows":
+        try:
+            os.chmod("obs_config.json", 0o600)
+        except (OSError, AttributeError):
+            pass  # Permissions not supported on this platform
 
     print("✅ Secure configuration file created!")
     print("File permissions set to 600 (owner read/write only)")

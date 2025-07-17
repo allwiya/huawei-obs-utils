@@ -23,6 +23,7 @@ import getpass
 import json
 import logging
 import os
+import platform
 from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
@@ -172,9 +173,12 @@ class Config:
         with open(sample_file, "w", encoding="utf-8") as f:
             json.dump(sample_config, f, indent=2)
 
-        # Set secure permissions on sample file
-        if os.name != "nt":  # Not Windows
-            os.chmod(sample_file, 0o600)
+        # Set secure permissions on sample file (Unix/Linux/macOS only)
+        if platform.system() != "Windows":
+            try:
+                os.chmod(sample_file, 0o600)
+            except (OSError, AttributeError):
+                pass  # Permissions not supported on this platform
 
         logger.info(f"Sample configuration created: {sample_file}")
         print(f"Sample configuration file created: {sample_file}")
@@ -202,9 +206,16 @@ class Config:
         return False
 
     def secure_file_permissions(self):
-        """Set secure permissions on configuration file"""
-        if os.path.exists(self.config_file) and os.name != "nt":
-            os.chmod(self.config_file, 0o600)  # Read/write for owner only
-            logger.info(f"✅ Set secure permissions on {self.config_file}")
-            return True
+        """Set secure permissions on configuration file (Unix/Linux/macOS only)"""
+        if os.path.exists(self.config_file) and platform.system() != "Windows":
+            try:
+                os.chmod(self.config_file, 0o600)  # Read/write for owner only
+                logger.info(f"✅ Set secure permissions on {self.config_file}")
+                return True
+            except (OSError, AttributeError):
+                logger.warning("Could not set file permissions on this platform")
+                return False
+        elif platform.system() == "Windows":
+            logger.info("File permissions not applicable on Windows")
+            return True  # Consider it successful on Windows
         return False

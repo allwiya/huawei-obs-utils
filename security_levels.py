@@ -26,6 +26,7 @@ import hashlib
 import json
 import logging
 import os
+import platform
 from typing import Dict, List, Optional
 
 from cryptography.fernet import Fernet
@@ -80,7 +81,7 @@ class MultiLevelSecurity:
                 master_password = getpass.getpass("Enter master password for security levels: ")
                 self.security_config = self._decrypt_security_config(master_password)
             elif os.path.exists(self.config_file):
-                with open(self.config_file, "r") as f:
+                with open(self.config_file, "r", encoding="utf-8") as f:
                     self.security_config = json.load(f)
             else:
                 # Create default configuration
@@ -132,10 +133,13 @@ class MultiLevelSecurity:
             with open(self.salt_file, "wb") as f:
                 f.write(salt)
 
-            # Set secure permissions
-            if os.name != "nt":
-                os.chmod(self.encrypted_file, 0o600)
-                os.chmod(self.salt_file, 0o600)
+            # Set secure permissions (Unix/Linux/macOS only)
+            if platform.system() != "Windows":
+                try:
+                    os.chmod(self.encrypted_file, 0o600)
+                    os.chmod(self.salt_file, 0o600)
+                except (OSError, AttributeError):
+                    pass  # Permissions not supported on this platform
 
             return True
         except Exception as e:
